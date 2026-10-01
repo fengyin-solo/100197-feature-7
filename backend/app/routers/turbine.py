@@ -18,16 +18,32 @@ STATUSES = ["待投运", "运行中", "故障停机", "已退役"]
 
 @router.get("", response_model=PageResult[dict])
 def list_entries(
-    keyword: str | None = Query(default=None, description="按机组编号检索"),
+    keyword: str | None = Query(default=None, description="按机组编号或机组机型模糊检索"),
     status: str | None = Query(default=None, description="待投运、运行中、故障停机、已退役"),
+    hub_min: float | None = Query(default=None, description="轮毂高度下限（米）"),
+    hub_max: float | None = Query(default=None, description="轮毂高度上限（米）"),
     page: int = 1,
     size: int = 20,
 ) -> PageResult[dict]:
-    """按机组编号与状态过滤风电机组列表；没有数据时返回空页，不报错。"""
+    """按编号/机型、运行状态与轮毂高度区间组合过滤；条件互相矛盾时给出说明而不是空页。"""
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
-    items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
-    return PageResult(items=items, total=total, page=page, size=size)
+    if status and status not in STATUSES:
+        raise HTTPException(status_code=400, detail=f"运行状态只支持：{'、'.join(STATUSES)}")
+    if hub_min is not None and hub_max is not None and hub_min > hub_max:
+        raise HTTPException(
+            status_code=400,
+            detail=f"轮毂高度区间互相矛盾：下限 {hub_min} 米大于上限 {hub_max} 米，请调整后再查",
+        )
+    items, total, summary = service.list_entries(
+        keyword=keyword,
+        status=status,
+        hub_min=hub_min,
+        hub_max=hub_max,
+        page=page,
+        size=size,
+    )
+    return PageResult(items=items, total=total, page=page, size=size, summary=summary)
 
 
 @router.get("/{entry_id}", response_model=dict)
@@ -61,5 +77,5 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
 @router.get("/export")
 def export_entries() -> dict[str, Any]:
     """导出风电机组清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
+    items, total, _summary = service.list_entries(page=1, size=10000)
     return {"module": "turbine", "total": total, "items": items}
