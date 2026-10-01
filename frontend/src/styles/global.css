@@ -23,6 +23,19 @@ body { margin: 0; background: #f6f8fb; color: #1f2937; }
 .stat-value { font-size: 20px; }
 .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
 .filter-item span { display: block; font-size: 12px; color: var(--muted); }
+.filter-item input, .filter-item select { border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; font-size: 13px; min-width: 180px; background: #fff; color: inherit; }
+.filter-item--num { min-width: 220px; }
+.range-inputs { display: flex; align-items: center; gap: 6px; }
+.range-inputs input { min-width: 72px; width: 72px; }
+.range-sep { color: var(--muted); font-size: 12px; }
+.notice { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; font-size: 13px; }
+.notice--warn { background: #fffaeb; border: 1px solid #fedf89; color: #b54708; }
+.notice--error { background: #fef3f2; border: 1px solid #fecdca; color: #b42318; }
+.notice .btn:disabled { opacity: .6; cursor: default; }
+.data-table--stale { opacity: .55; }
+.pager { display: flex; align-items: center; gap: 8px; }
+.pager-info { color: var(--muted); }
+.pager .btn:disabled { opacity: .5; cursor: default; }
 .data-table { width: 100%; border-collapse: collapse; background: #fff; }
 .data-table th, .data-table td { border: 1px solid var(--border); padding: 8px 10px; font-size: 13px; text-align: left; }
 .empty-state { text-align: center; color: var(--muted); }

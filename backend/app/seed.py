@@ -3,6 +3,39 @@ from __future__ import annotations
 
 from typing import Any
 
+
+def _generate_turbines() -> list[dict[str, Any]]:
+    """生成一批机型、轮毂高度、状态各不相同的机组，便于筛选与分页演示。"""
+    models = [
+        ("GW1500-70", 1500, 70),
+        ("GW2000-80", 2000, 80),
+        ("GW2500-90", 2500, 90),
+        ("GW3000-100", 3000, 100),
+        ("GW4000-120", 4000, 120),
+    ]
+    farms = ["坝上风电场", "苍岭风电场", "云顶风电场"]
+    statuses = ["运行中"] * 12 + ["待投运"] * 4 + ["故障停机"] * 4 + ["已退役"] * 4
+    rows: list[dict[str, Any]] = []
+    for index, status in enumerate(statuses, start=1):
+        model_name, power, height = models[(index - 1) % len(models)]
+        commissioned = status != "待投运"
+        rows.append({
+            "id": index,
+            "status": status,
+            "pending": status != "已退役",
+            "abnormal": status == "故障停机",
+            "机组编号": f"TURB-{index:04d}",
+            "机组机型": model_name,
+            "额定功率": power,
+            "轮毂高度": height,
+            "所属场站": farms[(index - 1) % len(farms)],
+            "投运日期": f"2025-{((index - 1) % 12) + 1:02d}-{(index % 27) + 1:02d}" if commissioned else None,
+            "累计发电量": round(power * 1.8 * (0.9 if status == "运行中" else 0.3), 1) if commissioned else 0,
+            "机组状态": status,
+        })
+    return rows
+
+
 SEED_ROWS: dict[str, list[dict[str, Any]]] = {
     "windfarm": [{'id': 1,
   'status': '在建',
@@ -40,42 +73,7 @@ SEED_ROWS: dict[str, list[dict[str, Any]]] = {
   '运营单位': '风电场站样例3',
   '海拔高度': '风电场站样例3',
   '场站状态': '风电场站样例3'}],
-    "turbine": [{'id': 1,
-  'status': '待投运',
-  'pending': True,
-  'abnormal': False,
-  '机组编号': 'TURB-0001',
-  '机组机型': '风电机组样例1',
-  '额定功率': '风电机组样例1',
-  '轮毂高度': '风电机组样例1',
-  '所属场站': '风电机组样例1',
-  '投运日期': '2026-09-01',
-  '累计发电量': '风电机组样例1',
-  '机组状态': '风电机组样例1'},
- {'id': 2,
-  'status': '运行中',
-  'pending': True,
-  'abnormal': True,
-  '机组编号': 'TURB-0002',
-  '机组机型': '风电机组样例2',
-  '额定功率': '风电机组样例2',
-  '轮毂高度': '风电机组样例2',
-  '所属场站': '风电机组样例2',
-  '投运日期': '2026-09-02',
-  '累计发电量': '风电机组样例2',
-  '机组状态': '风电机组样例2'},
- {'id': 3,
-  'status': '故障停机',
-  'pending': False,
-  'abnormal': False,
-  '机组编号': 'TURB-0003',
-  '机组机型': '风电机组样例3',
-  '额定功率': '风电机组样例3',
-  '轮毂高度': '风电机组样例3',
-  '所属场站': '风电机组样例3',
-  '投运日期': '2026-09-03',
-  '累计发电量': '风电机组样例3',
-  '机组状态': '风电机组样例3'}],
+    "turbine": _generate_turbines(),
     "blade": [{'id': 1,
   'status': '待检查',
   'pending': True,
